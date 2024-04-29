@@ -319,6 +319,12 @@ require('lazy').setup({
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
+  -- {
+  --   'neovim/nvim-lspconfig', -- neovims configuation for the built in client
+  --   config = function()
+  --     require 'custom.plugins.lspconfig'
+  --   end,
+  -- },
 
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
@@ -455,10 +461,11 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      --
       local servers = {
         clangd = {},
         gopls = {},
-        -- pyright = {},
+        tsserver = {},
         rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -466,8 +473,41 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        tsserver = {},
+        -- tsserver = {
+        --   capabilities = {
+        --     codeAction = {
+        --       enable = true,
+        --       eslint = {
+        --         lintTask = 'eslint',
+        --       },
+        --     },
+        --   },
+        --   -- Set up ESLint as a diagnostic source for TypeScript files
+        --   root_dir = function(fname)
+        --     return lspconfig.util.root_pattern '.eslintrc.js'(fname)
+        --       or lspconfig.util.root_pattern '.eslintrc.json'(fname)
+        --       or lspconfig.util.root_pattern '.prettierrc.js'(fname)
+        --       or lspconfig.util.root_pattern '.prettierrc.json'(fname)
+        --       or lspconfig.util.root_pattern 'tsconfig.json'(fname)
+        --   end,
         --
+        --   -- efm = {
+        --   init_options = { documentFormatting = true },
+        --   root_dir = function(fname)
+        --     return lspconfig.util.root_pattern '.eslintrc.js'(fname)
+        --       or lspconfig.util.root_pattern '.eslintrc.json'(fname)
+        --       or lspconfig.util.root_pattern '.prettierrc.js'(fname)
+        --       or lspconfig.util.root_pattern '.prettierrc.json'(fname)
+        --       or lspconfig.util.root_pattern 'tsconfig.json'(fname)
+        --   end,
+        --   filetypes = { 'typescript', 'javascript' },
+        --   settings = {
+        --     languages = {
+        --       typescript = { lintCommand = 'eslint', lintStdin = true, lintFormats = { '%f:%l:%c: %m' } },
+        --       javascript = { lintCommand = 'eslint', lintStdin = true, lintFormats = { '%f:%l:%c: %m' } },
+        --     },
+        --   },
+        -- },
 
         lua_ls = {
           -- cmd = {...},
@@ -484,7 +524,15 @@ require('lazy').setup({
           },
         },
       }
-
+      local patterns = { '*.lua', '*.tsx', '*.jsx', '*.ts', '*.js', '*.css', '*.html', '*.yaml', '*.rb', '*.java', '*.rs', '*.json', '*.sql' }
+      vim.api.nvim_create_augroup('AutoFormatting', {})
+      vim.api.nvim_create_autocmd('BufWritePre', {
+        pattern = patterns,
+        group = 'AutoFormatting',
+        callback = function()
+          vim.lsp.buf.format { async = false }
+        end,
+      })
       -- Ensure the servers and tools above are installed
       --  To check the current status of installed tools and/or manually install
       --  other tools, you can run
@@ -492,7 +540,6 @@ require('lazy').setup({
       --
       --  You can press `g?` for help in this menu.
       require('mason').setup()
-
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
@@ -548,7 +595,8 @@ require('lazy').setup({
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        -- javascript = { { "prettierd", "prettier" } },
+        javascript = { { 'prettier' } },
+        typescript = { { 'prettier' } },
       },
     },
   },
@@ -609,9 +657,9 @@ require('lazy').setup({
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
           -- Select the [n]ext item
-          ['<C-n>'] = cmp.mapping.select_next_item(),
+          ['<down>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
+          ['<up>'] = cmp.mapping.select_prev_item(),
 
           -- Scroll the documentation window [b]ack / [f]orward
           ['<C-b>'] = cmp.mapping.scroll_docs(-4),
@@ -620,7 +668,7 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<CR>'] = cmp.mapping.confirm { select = true },
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
@@ -757,7 +805,7 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  require 'kickstart.plugins.indent_line',
+  -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
