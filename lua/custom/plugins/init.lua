@@ -24,7 +24,9 @@ return {
     opts = {},
     config = function(_, opts)
       require('toggleterm').setup {
-        open_mapping = [[<C-j>]],
+        open_mapping = [[<C-t>]],
+        direction = 'vertical',
+        size = vim.o.columns * 0.4,
       }
     end,
   },
