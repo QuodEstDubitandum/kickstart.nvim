@@ -68,6 +68,9 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+vim.cmd 'syntax on'
+vim.opt.synmaxcol = 500 -- Increase this number as needed
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -503,8 +506,9 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         gopls = {},
-        tsserver = {},
+        ts_ls = {},
         rust_analyzer = {},
+        pyright = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -574,6 +578,7 @@ require('lazy').setup({
         '*.rb',
         '*.java',
         '*.rs',
+        '*.go',
         -- '*.json',
         '*.sql',
         '*.proto',
@@ -833,7 +838,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'sql' },
+      ensure_installed = { 'bash', 'c', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'sql', 'python' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
